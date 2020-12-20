@@ -10,6 +10,7 @@ setup(
         "imageio-ffmpeg",
         "scikit-image",
         "pyyaml",
+        "pyserial",
     ],
     entry_points={"console_scripts": ["campy-acquire = campy.campy:Main"]},
 )
