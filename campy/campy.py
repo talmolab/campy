@@ -29,6 +29,7 @@ import argparse
 import ast
 import yaml
 import logging
+import serial
 
 
 def LoadConfig(config_path):
@@ -309,6 +310,13 @@ def Main():
         pool = ctx.Pool(processes=params["numCams"])
         p = pool.map_async(AcquireOneCamera, range(0, params["numCams"]))
         p.get()
+
+    # If desired, start the arduino after waiting for two seconds for
+    # all of the cameras to initilize
+    if params["startArduino"]:
+        time.sleep(2)
+        ser = serial.Serial(params["serialPort"])
+        ser.write(bytes([params["frameRate"]]))
 
 
 parser = argparse.ArgumentParser(
