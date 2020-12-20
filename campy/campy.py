@@ -30,7 +30,7 @@ import ast
 import yaml
 import logging
 import serial
-
+import struct
 
 def LoadConfig(config_path):
     try:
@@ -269,8 +269,20 @@ def ParseClargs(parser):
     parser.add_argument(
         "--displayDownsample",
         dest="displayDownsample",
-        type=int,
+        type=ast.literal_eval,
         help="Downsampling factor for displaying images.",
+    )
+    parser.add_argument(
+        "--startArduino",
+        dest="startArduino",
+        type=int,
+        help="If True, start arduino after initializing cameras.",
+    )
+    parser.add_argument(
+        "--serialPort",
+        dest="serialPort",
+        type=int,
+        help="Serial port for communicating with Arduino.",
     )
     return parser.parse_args()
 
@@ -301,6 +313,16 @@ def Main():
     if params["ffmpegPath"]:
         os.environ["IMAGEIO_FFMPEG_EXE"] = params["ffmpegPath"]
 
+    # If desired, start the arduino.
+    # The arduino sketch delays prior to starting to allow the cameras to initialize. 
+    print(params["startArduino"], flush=True)
+    if params["startArduino"]:
+        print('Opening arduino port', flush=True)
+        ser = serial.Serial(params["serialPort"], baudrate=9600)
+        time.sleep(2)
+        print("Starting arduino loop")
+        ser.write(struct.pack('>B', params["frameRate"]))
+
     if sys.platform == "win32":
         pool = mp.Pool(processes=params["numCams"])
         pool.map(AcquireOneCamera, range(0, params["numCams"]))
@@ -310,14 +332,6 @@ def Main():
         pool = ctx.Pool(processes=params["numCams"])
         p = pool.map_async(AcquireOneCamera, range(0, params["numCams"]))
         p.get()
-
-    # If desired, start the arduino after waiting for two seconds for
-    # all of the cameras to initilize
-    if params["startArduino"]:
-        time.sleep(2)
-        ser = serial.Serial(params["serialPort"])
-        ser.write(bytes([params["frameRate"]]))
-
 
 parser = argparse.ArgumentParser(
     description="Campy CLI",
