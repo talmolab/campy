@@ -321,7 +321,7 @@ def Main():
         ser = serial.Serial(params["serialPort"], baudrate=9600)
         time.sleep(2)
         print("Starting arduino loop")
-        ser.write(struct.pack('>B', params["frameRate"]))
+        ser.write(str(params["frameRate"]).encode())
 
     if sys.platform == "win32":
         pool = mp.Pool(processes=params["numCams"])
