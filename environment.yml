@@ -20,10 +20,10 @@ dependencies:
     # - sleap::pyside2=5.14.1
     # - pillow
     # - shapely=1.7.1
-- pip
-- pip:
-    - setuptools
-    - opencv-python
-    # For Basler cameras:
-    # - pypylon
-    - "--editable=./"
+    - pip
+    - pip:
+        - setuptools
+        - opencv-python
+        # For Basler cameras:
+        # - pypylon
+        - "--editable=./"
