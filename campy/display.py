@@ -9,7 +9,7 @@ mpl.use('Qt5Agg') # ignore qtapp warning...
 import matplotlib.pyplot as plt
 
 
-def DrawFigure(num):
+def DrawFigure(num, height, width):
 	mpl.rcParams['toolbar'] = 'None' 
 
 	figure = plt.figure(num)
@@ -19,7 +19,7 @@ def DrawFigure(num):
 	plt.autoscale(tight=True)
 	plt.ion()
 
-	imageWindow = ax.imshow(np.zeros((1,1,3), dtype='uint8'), 
+	imageWindow = ax.imshow(np.zeros((height, width, 3), dtype='uint8'), 
 		interpolation='none')
 
 	figure.canvas.draw()
@@ -35,7 +35,7 @@ def DisplayFrames(cam_params, dispQueue):
 		# Display on Basler cameras uses the Pylon image window handled by cameras/basler.py
 		pass
 	else:
-		figure, imageWindow = DrawFigure(n_cam+1)
+		figure, imageWindow = DrawFigure(n_cam+1, cam_params["frameHeight"], cam_params["frameWidth"])
 		while(True):
 			try:
 				if dispQueue:
