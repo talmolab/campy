@@ -7,6 +7,10 @@ import os, sys, time, csv, logging
 import numpy as np
 from collections import deque
 from scipy import io as sio
+from rich.pretty import pprint
+from rich.table import Table
+from rich.live import Live
+from datetime import timedelta
 
 
 def ImportCam(make):
@@ -58,7 +62,7 @@ def LoadDevice(systems, params, cam_params):
 def OpenCamera(cam_params, stopWriteQueue):
     # Import the cam module
     cam = ImportCam(cam_params["cameraMake"])
-
+    
     try:
         camera, cam_params = cam.OpenCamera(cam_params)
 
@@ -72,7 +76,7 @@ def OpenCamera(cam_params, stopWriteQueue):
         )
 
     except Exception as e:
-        logging.error("Caught error at cameras/unicam.py OpenCamera: {}".format(e))
+        logging.exception("Caught error at cameras/unicam.py OpenCamera:")
         stopWriteQueue.append("STOP")
 
     return cam, camera, cam_params
@@ -138,20 +142,52 @@ def StartGrabbing(camera, cam_params, cam):
     return grabbing
 
 
-def CountFPS(grabdata, frameNumber, timeStamp):
+def CountFPS(grabdata, frameNumber, timeStamp, status_table, live_display):
     if frameNumber % grabdata["chunkLengthInFrames"] == 0:
-        timeElapsed = timeStamp - grabdata["timeStamp"][0]
-        fpsCount = round(frameNumber / timeElapsed, 1)
-        print(
-            "{} collected {} frames at {} fps for {} sec.".format(
-                grabdata["cameraName"], frameNumber, fpsCount, round(timeElapsed)
-            )
+        session_elapsed = timeStamp - grabdata["timeStamp"][0]
+        session_elapsed_min, session_elapsed_sec = divmod(session_elapsed, 60)
+        frame_count = len(grabdata["timeStamp"])
+        dropped = frame_count - frameNumber
+        ts = grabdata["timeStamp"]
+        if len(ts) > grabdata["chunkLengthInFrames"]:
+            ts = ts[-grabdata["chunkLengthInFrames"]:]
+        dts = np.abs(np.diff(ts))
+        fps = 1 / dts
+        fps_avg = fps.mean()
+        fps_std = fps.std()
+
+        status_table.add_row(
+            f"{int(session_elapsed_min):02}:{int(round(session_elapsed_sec)):02}",
+            f"{frameNumber:,}",
+            f"{frame_count:,}",
+            f"{dropped:,}",
+            f"{fps_avg:.1f} +- {fps_std:.1f}",
         )
+
+        if live_display is None:
+            live_display = Live(status_table)
+            live_display.start()
+
+    return live_display
+
+
+def setup_status_table():
+    table = Table(show_footer=False)
+    table.add_column("Session")
+    table.add_column("Frame")
+    table.add_column("Grabs")
+    table.add_column("Drops")
+    table.add_column("FPS")
+    return table
 
 
 def GrabFrames(cam_params, writeQueue, dispQueue, stopReadQueue, stopWriteQueue):
     # Open the camera object
     cam, camera, cam_params = OpenCamera(cam_params, stopWriteQueue)
+
+    print("Camera parameters:")
+    pprint(cam_params)
+    print()
 
     # Use Basler's default display window on Windows. Not supported on Linux
     if sys.platform == "win32" and cam_params["cameraMake"] == "basler":
@@ -162,6 +198,10 @@ def GrabFrames(cam_params, writeQueue, dispQueue, stopReadQueue, stopWriteQueue)
 
     # Start grabbing frames from the camera
     grabbing = StartGrabbing(camera, cam_params, cam)
+
+    # Setup status logging
+    status_table = setup_status_table()
+    live_display = None
 
     frameNumber = 0
     while not stopReadQueue:
@@ -183,7 +223,7 @@ def GrabFrames(cam_params, writeQueue, dispQueue, stopReadQueue, stopWriteQueue)
             if frameNumber % grabdata["frameRatio"] == 0:
                 img = cam.DisplayImage(cam_params, dispQueue, grabResult)
 
-            CountFPS(grabdata, frameNumber, timeStamp)
+            live_display = CountFPS(grabdata, frameNumber, timeStamp, status_table, live_display)
 
             cam.ReleaseFrame(grabResult)
 
@@ -196,6 +236,9 @@ def GrabFrames(cam_params, writeQueue, dispQueue, stopReadQueue, stopWriteQueue)
                     "Caught exception at cameras/unicam.py GrabFrames: {}".format(e)
                 )
             time.sleep(0.001)
+
+    if live_display is not None:
+        live_display.stop()
 
     # Close the camaera, save metadata, and tell writer and display to close
     cam.CloseCamera(cam_params, camera)
@@ -216,7 +259,7 @@ def SaveMetadata(cam_params, grabdata):
         # Get the frame and time counts to save into metadata
         frame_count = grabdata["frameNumber"][-1]
         time_count = grabdata["timeStamp"][-1]
-        fps_count = int(round(frame_count / time_count))
+        fps_count = frame_count / time_count
         print(
             "{} saved {} frames at {} fps.".format(
                 cam_params["cameraName"], frame_count, fps_count
