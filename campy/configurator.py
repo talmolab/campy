@@ -36,6 +36,9 @@ def DefaultParams():
 	params["cameraGain"] = 1
 	params["disableGamma"] = True
 
+	# OpenCV defaults
+	params["opencvExposure"] = 0
+
 	# Compression default parameters
 	params["ffmpegLogLevel"] = "quiet"
 	params["ffmpegPath"] = "None" # "/home/usr/Documents/ffmpeg/ffmpeg"
@@ -296,6 +299,14 @@ def ParseClargs(parser):
 		dest="disableGamma",
 		type=bool, 
 		help="Whether to disable gamma (default: True).",
+	)
+	parser.add_argument(
+		"--opencvExposure", 
+		dest="opencvExposure",
+		type=float, 
+		help="Set to [-11, -1] to decrease exposure. "
+		"Set to 1 to enable auto exposure. "
+		"Set to 0 to apply no change (default: 0).",
 	)
 	parser.add_argument(
 		"--bufferMode", 

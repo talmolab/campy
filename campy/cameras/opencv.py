@@ -24,48 +24,54 @@ def GetDeviceList(system):
     return system
 
 
-def LoadDevice(cam_params):
+def LoadDevice(systems, params, cam_params):
 
-    return cam_params["device"]
+    return cam_params
 
 
 def GetSerialNumber(device):
 
-    return device
+    return "OpenCV"
 
 
 def GetModelName(camera):
 
-    return "Emulated_Camera"
+    return "OpenCV camera"
 
 
-def OpenCamera(cam_params, device):
+def OpenCamera(cam_params):
 
     backend = cv2.CAP_DSHOW if os.name == "nt" else cv2.CAP_FFMPEG
-    camera = cv2.VideoCapture(cam_params["camera"], backend)
+    camera = cv2.VideoCapture(cam_params["cameraSelection"], backend)
 
-    # Set features manually or automatically, depending on configuration
-    # frame_size = camera.get_meta_data()["size"]
-    # cam_params["frameWidth"] = frame_size[0]
-    # cam_params["frameHeight"] = frame_size[1]
+    cam_params["cameraModel"] = "OpenCV"
 
     cam_params = LoadSettings(cam_params, camera)
-    print(f"Opened camera ID: {self.camera}.")
+    print(f"Opened camera ID: {cam_params['cameraSelection']}")
     return camera, cam_params
 
 
 def LoadSettings(cam_params, camera):
 
     # Set camera parameters.
+    camera.set(cv2.CAP_PROP_FPS, cam_params["frameRate"])
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, cam_params["frameWidth"])
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, cam_params["frameHeight"])
     camera.set(cv2.CAP_PROP_BUFFERSIZE, cam_params["bufferSize"])
     # camera.set(cv2.CAP_PROP_BRIGHTNESS, self.camera_brightness)
+    
+    if cam_params["opencvExposure"] > 0:
+        camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
+    elif cam_params["opencvExposure"] < 0:
+        camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)
+        camera.set(cv2.CAP_PROP_EXPOSURE, cam_params["opencvExposure"])
 
     # Query camera for parameter values that actually took effect.
-    cam_params["frameWidth"] = camera.get(cv2.CAP_PROP_FRAME_WIDTH)
-    cam_params["frameHeight"] = camera.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    cam_params["bufferSize"] = camera.get(cv2.CAP_PROP_BUFFERSIZE)
+    cam_params["frameRate"] = camera.get(cv2.CAP_PROP_FPS)
+    cam_params["frameWidth"] = int(camera.get(cv2.CAP_PROP_FRAME_WIDTH))
+    cam_params["frameHeight"] = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    cam_params["bufferSize"] = int(camera.get(cv2.CAP_PROP_BUFFERSIZE))
+    cam_params["opencvExposure"] = camera.get(cv2.CAP_PROP_EXPOSURE)
 
     return cam_params
 
@@ -78,6 +84,7 @@ def StartGrabbing(camera):
 def GrabFrame(camera, frameNumber):
 
     success, img = camera.read()
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # BGR -> RGB
     return img
 
 

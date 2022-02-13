@@ -1,0 +1,31 @@
+# This beginner-level config uses the CPU (gpuID: -1) 
+# to compress RGB video
+# using ffmpeg's X264 codec
+
+# Recording parameters
+videoFolder: "./test"
+videoFilename: "0.mp4"
+frameRate: 25
+recTimeInSec: 10
+chunkLengthInSec: 1
+
+# Camera parameters
+numCams: 1
+cameraMake: "opencv"
+frameWidth: 1920
+frameHeight: 1080
+bufferSize: 10
+opencvExposure: 0  # 0 = no change
+
+# Compression parameters
+gpuID: -1
+pixelFormatInput: "rgb0"
+pixelFormatOutput: "rgb0"
+codec: "h264"
+quality: 23
+preset: "superfast"
+ffmpegLogLevel: "warning"
+# ffmpegPath: "/usr/bin/ffmpeg"       # Location of ffmpeg binary if not using Anaconda
+
+# Display parameters
+displayFrameRate: 10
