@@ -54,12 +54,12 @@ def OpenCamera(cam_params):
 def LoadSettings(cam_params, camera):
 
     # Set camera parameters.
-    camera.set(cv2.CAP_PROP_FPS, cam_params["frameRate"])
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, cam_params["frameWidth"])
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, cam_params["frameHeight"])
+    camera.set(cv2.CAP_PROP_FPS, cam_params["frameRate"])
     camera.set(cv2.CAP_PROP_BUFFERSIZE, cam_params["bufferSize"])
     # camera.set(cv2.CAP_PROP_BRIGHTNESS, self.camera_brightness)
-    
+
     if cam_params["opencvExposure"] > 0:
         camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
     elif cam_params["opencvExposure"] < 0:
