@@ -43,11 +43,12 @@ def OpenCamera(cam_params):
 
     backend = cv2.CAP_DSHOW if os.name == "nt" else cv2.CAP_FFMPEG
     camera = cv2.VideoCapture(cam_params["cameraSelection"], backend)
+    print(f"Opened camera ID: {cam_params['cameraSelection']}")
 
     cam_params["cameraModel"] = "OpenCV"
 
-    cam_params = LoadSettings(cam_params, camera)
-    print(f"Opened camera ID: {cam_params['cameraSelection']}")
+    if not cam_params["opencvNoProps"]:
+        cam_params = LoadSettings(cam_params, camera)
     return camera, cam_params
 
 
@@ -58,7 +59,6 @@ def LoadSettings(cam_params, camera):
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, cam_params["frameHeight"])
     camera.set(cv2.CAP_PROP_FPS, cam_params["frameRate"])
     camera.set(cv2.CAP_PROP_BUFFERSIZE, cam_params["bufferSize"])
-    # camera.set(cv2.CAP_PROP_BRIGHTNESS, self.camera_brightness)
 
     if cam_params["opencvExposure"] > 0:
         camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)

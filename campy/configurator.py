@@ -37,6 +37,7 @@ def DefaultParams():
 	params["disableGamma"] = True
 
 	# OpenCV defaults
+	params["opencvNoProps"] = False
 	params["opencvExposure"] = 0
 
 	# Compression default parameters
@@ -299,6 +300,12 @@ def ParseClargs(parser):
 		dest="disableGamma",
 		type=bool, 
 		help="Whether to disable gamma (default: True).",
+	)
+	parser.add_argument(
+		"--opencvNoProps", 
+		dest="opencvNoProps",
+		type=bool, 
+		help="Whether to skip setting any properties in case camera does not support it(default: False).",
 	)
 	parser.add_argument(
 		"--opencvExposure", 
