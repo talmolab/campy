@@ -68,7 +68,7 @@ def StartGrabbing(camera):
 def GrabFrame(camera, frameNumber):
 
     success, img = camera.read()
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # BGR -> RGB
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # BGR -> GRAY
     return img
 
 
@@ -85,7 +85,7 @@ def GetTimeStamp(grabResult):
 def DisplayImage(cam_params, dispQueue, grabResult):
     # Downsample image
     img = grabResult[
-        :: cam_params["displayDownsample"], :: cam_params["displayDownsample"], :
+        :: cam_params["displayDownsample"], :: cam_params["displayDownsample"]
     ]
 
     # Send to display queue

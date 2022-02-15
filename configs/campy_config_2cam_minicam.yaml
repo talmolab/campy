@@ -6,22 +6,23 @@
 videoFolder: "./test"
 videoFilename: "0.mp4"
 frameRate: 47
-recTimeInSec: 10
-chunkLengthInSec: 1
+recTimeInSec: 3600
+chunkLengthInSec: 30
+displayDownsample: 2
 
 # Camera parameters
-numCams: 1
-cameraMake: "opencv"
+numCams: 2
+cameraSelection: [0, 2]
+cameraMake: "minicam"
 frameWidth: 1024
 frameHeight: 768
-bufferSize: 10
-opencvNoProps: true  # don't set any properties (for MiniCAM)
-opencvExposure: 0  # 0 = no change
 
 # Compression parameters
-gpuID: -1
-gpuMake: "nvidia"
-pixelFormatInput: "rgb0"
+gpuID: 0
+# https://ffmpeg.org/doxygen/trunk/pixfmt_8h_source.html
+# pixelFormatInput: "rgb0"
+# pixelFormatOutput: "gray8"
+pixelFormatInput: "gray8"
 pixelFormatOutput: "rgb0"
 codec: "h264"
 quality: 23
@@ -30,4 +31,4 @@ ffmpegLogLevel: "warning"
 # ffmpegPath: "/usr/bin/ffmpeg"       # Location of ffmpeg binary if not using Anaconda
 
 # Display parameters
-displayFrameRate: 10
+displayFrameRate: 2
