@@ -22,6 +22,8 @@ def ImportCam(make):
         from campy.cameras import emu as cam
     elif make == "opencv":
         from campy.cameras import opencv as cam
+    elif make == "minicam":
+        from campy.cameras import minicam as cam
     else:
         print("Camera make is not supported by CamPy. Check config.", flush=True)
     return cam
