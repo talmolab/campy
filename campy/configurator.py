@@ -96,10 +96,10 @@ def AutoParams(params, default_params):
 
     # Handle missing config parameters
     if "numCams" in params.keys():
-        if "cameraNames" not in params.keys():
-            params["cameraNames"] = ["Camera%s" % n for n in range(params["numCams"])]
         if "cameraSelection" not in params.keys():
             params["cameraSelection"] = [n for n in range(params["numCams"])]
+        if "cameraNames" not in params.keys():
+            params["cameraNames"] = [f"Camera{c}" for c in params["cameraSelection"]]
     else:
         print(
             "Please configure 'numCams' to the number of cameras you want to acquire."
