@@ -33,6 +33,7 @@ quality: 23
 # preset: "superfast"
 ffmpegLogLevel: "warning"
 # ffmpegPath: "/usr/bin/ffmpeg"       # Location of ffmpeg binary if not using Anaconda
+videoSegmentLengthInSec: 900  # 15 min
 
 # Display parameters
 displayFrameRate: 2
