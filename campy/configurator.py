@@ -4,6 +4,8 @@
 import os, ast, yaml, time, logging
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from campy.cameras import unicam
+from pathlib import Path
+from datetime import datetime
 
 
 def DefaultParams():
@@ -104,6 +106,16 @@ def AutoParams(params, default_params):
         print(
             "Please configure 'numCams' to the number of cameras you want to acquire."
         )
+
+    # Auto name video folder so we don't overwrite
+    p = Path(params["videoFolder"])
+    dt = datetime.now()
+    p = p.with_name(
+        f"{p.name}."
+        f"{str(dt.year)[2:]}{dt.month:02}{dt.day:02}_"
+        f"{dt.hour:02}{dt.minute:02}{dt.second:02}"
+    )
+    params["videoFolder"] = p.as_posix()
 
     return params
 
