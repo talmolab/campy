@@ -1,8 +1,54 @@
 """
 """
 from imageio_ffmpeg import write_frames
-import os, sys, time, logging
+import os, time
 from campy.utils.utils import QueueKeyboardInterrupt
+from rich.console import Console
+import traceback
+from pathlib import Path
+import csv
+import json
+
+
+console = Console()
+
+
+def OpenMetadataWriter(folder_name, cam_params, flush_every=500):
+
+    # Save metadata
+    cam_params_path = (Path(folder_name) / "cam_params.csv").as_posix()
+    with open(cam_params_path, "w") as f:
+        json.dump(cam_params, f)
+    console.log("Saved camera params to: " + cam_params_path)
+
+    # Setup timestamp streamer
+    ts_path = (Path(folder_name) / "timestamps.csv").as_posix()
+    console.log("Writing timestamps to: " + ts_path)
+    Path(ts_path).unlink(missing_ok=True)
+    file = open(ts_path, "a")
+    writer = csv.DictWriter(
+        file, delimiter=",", fieldnames=["frameNumber", "timeStamp"]
+    )
+    writer.writeheader()
+    t0 = None
+
+    # Create a writer in a generator loop
+    try:
+        while True:
+            frameNumber, timeStamp = yield  # this blocks until the .send() is called
+            if t0 is None:
+                t0 = timeStamp
+            timeStamp -= t0
+            writer.writerow({"frameNumber": frameNumber, "timeStamp": timeStamp})
+            if frameNumber % flush_every == 0:
+                file.flush()
+    except:
+        console.log(traceback.format_exc())
+        raise
+    finally:
+        file.flush()
+        file.close()
+        console.log(f"Closed metadata writer for: {ts_path}")
 
 
 def OpenWriter(cam_params, queue):
@@ -36,7 +82,7 @@ def OpenWriter(cam_params, queue):
 
         # CPU compression
         if cam_params["gpuID"] == -1:
-            print("Opened: {} using CPU to compress the stream.".format(full_file_name))
+            console.log(f"Opened: {full_file_name} using CPU to compress the stream.")
             if preset == "None":
                 preset = "fast"
             output_params = [
@@ -162,17 +208,21 @@ def OpenWriter(cam_params, queue):
                     "1",
                 ]
             )
+            p = full_file_name
+            full_file_name = p.with_suffix(".%05d" + p.suffix).as_posix()
 
     except Exception as e:
-        logging.error("Caught exception at writer.py OpenWriter: {}".format(e))
+        console.log(
+            f"Caught exception at writer.py OpenWriter:\n" + traceback.format_exc()
+        )
         raise
 
     # Initialize writer object (imageio-ffmpeg)
     while True:
         try:
+            console.log("Video writer output_params:\n" " ".join(output_params))
             writer = write_frames(
-                # full_file_name,
-                full_file_name + ".%05d.mp4",
+                full_file_name,
                 [cam_params["frameWidth"], cam_params["frameHeight"]],  # size [W,H]
                 fps=cam_params["frameRate"],
                 quality=None,
@@ -193,27 +243,35 @@ def OpenWriter(cam_params, queue):
             break
 
         except Exception as e:
-            logging.error("Caught exception at writer.py OpenWriter: {}".format(e))
+            console.log(
+                "Caught exception at writer.py OpenWriter:\n" + traceback.format_exc()
+            )
             raise
-            break
 
     # Initialize read queue object to signal interrupt
     readQueue = {}
     readQueue["queue"] = queue
     readQueue["message"] = "STOP"
 
-    return writer, writing, readQueue
+    # Initialize metadata writer
+    metadata_writer = OpenMetadataWriter(folder_name, cam_params)
+
+    return writer, metadata_writer, writing, readQueue
 
 
 def WriteFrames(cam_params, writeQueue, stopReadQueue, stopWriteQueue):
     # Start ffmpeg video writer
-    writer, writing, readQueue = OpenWriter(cam_params, stopReadQueue)
+    video_writer, metadata_writer, writing, readQueue = OpenWriter(
+        cam_params, stopReadQueue
+    )
 
     with QueueKeyboardInterrupt(readQueue):
         # Write until interrupted and/or stop message received
         while writing:
             if writeQueue:
-                writer.send(writeQueue.popleft())
+                frameNumber, timeStamp, img = writeQueue.popleft()
+                video_writer.send(img)
+                metadata_writer.send((frameNumber, timeStamp))
             else:
                 # Once queue is depleted and grabber stops, then stop writing
                 if stopWriteQueue:
@@ -222,8 +280,7 @@ def WriteFrames(cam_params, writeQueue, stopReadQueue, stopWriteQueue):
                 time.sleep(0.01)
 
     # Close up...
-    print(
-        "Closing video writer for {}. Please wait...".format(cam_params["cameraName"])
-    )
+    console.log(f"Closing video writer for {cam_params['cameraName']}. Please wait...")
     time.sleep(1)
-    writer.close()
+    video_writer.close()
+    metadata_writer.close()
