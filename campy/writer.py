@@ -26,7 +26,7 @@ def OpenMetadataWriter(folder_name, cam_params, flush_every=500):
     console.log("Writing timestamps to: " + ts_path)
     if Path(ts_path).exists():
         Path(ts_path).unlink()
-    file = open(ts_path, "a")
+    file = open(ts_path, "a", newline="")
     writer = csv.DictWriter(
         file, delimiter=",", fieldnames=["frameNumber", "timeStamp"]
     )
