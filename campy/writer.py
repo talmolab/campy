@@ -255,6 +255,7 @@ def OpenWriter(cam_params, queue):
 
     # Initialize metadata writer
     metadata_writer = OpenMetadataWriter(folder_name, cam_params)
+    metadata_writer.send(None)  # Initialize the generator
 
     return writer, metadata_writer, writing, readQueue
 
