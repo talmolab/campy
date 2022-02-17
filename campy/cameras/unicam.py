@@ -171,16 +171,17 @@ def CountFPS(grabdata, frameNumber, timeStamp):
         console.log(
             "".join(
                 [
-                    "[bold]Camera:[/bold] ",
-                    grabdata["cameraName"],
+                    f"[bold]{grabdata['cameraName']}[/bold]",
                     sep,
-                    f"[bold]Session:[/bold] {elapsed_hour:02}:{elapsed_min:02}:{elapsed_sec:02}",
+                    "[bold]Session:[/bold] ",
+                    f"{elapsed_hour:02}:{elapsed_min:02}:{elapsed_sec:02}",
                     sep,
                     f"[bold]Frames:[/bold] {frame_count:,}",
                     sep,
                     f"[bold]FPS:[/bold] {fps_avg:.1f} +- {fps_std:.1f}",
                     sep,
-                    f"[bold]Expected:[/bold] [{expected_col}]{expected_delta}[/{expected_col}]",
+                    "[bold]Expected:[/bold] ",
+                    f"[{expected_col}]{expected_delta}[/{expected_col}]",
                 ]
             )
         )
