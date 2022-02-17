@@ -163,10 +163,6 @@ def CountFPS(grabdata, frameNumber, timeStamp):
         fps_avg = fps.mean()
         fps_std = fps.std()
 
-        expected_frames = (ts[-1] - ts[0]) // grabdata["frameRate"]
-        expected_delta = expected_frames - grabdata["chunkLengthInFrames"]
-        expected_col = "bright_green" if abs(expected_delta) < 3 else "red"
-
         sep = " [grey70]|[/grey70] "
         console.log(
             "".join(
@@ -174,14 +170,11 @@ def CountFPS(grabdata, frameNumber, timeStamp):
                     f"[bold]{grabdata['cameraName']}[/bold]",
                     sep,
                     "[bold]Session:[/bold] ",
-                    f"{elapsed_hour:02}:{elapsed_min:02}:{elapsed_sec:02}",
+                    f"{int(elapsed_hour):02}:{int(elapsed_min):02}:{int(elapsed_sec):02}",
                     sep,
                     f"[bold]Frames:[/bold] {frame_count:,}",
                     sep,
                     f"[bold]FPS:[/bold] {fps_avg:.1f} +- {fps_std:.1f}",
-                    sep,
-                    "[bold]Expected:[/bold] ",
-                    f"[{expected_col}]{expected_delta}[/{expected_col}]",
                 ]
             )
         )
