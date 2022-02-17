@@ -43,6 +43,8 @@ def OpenMetadataWriter(folder_name, cam_params, flush_every=500):
             writer.writerow({"frameNumber": frameNumber, "timeStamp": timeStamp})
             if frameNumber % flush_every == 0:
                 file.flush()
+    except GeneratorExit:
+        pass
     except:
         console.log(traceback.format_exc())
         raise
