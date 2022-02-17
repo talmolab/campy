@@ -208,7 +208,7 @@ def OpenWriter(cam_params, queue):
                     "1",
                 ]
             )
-            p = full_file_name
+            p = Path(full_file_name)
             full_file_name = p.with_suffix(".%05d" + p.suffix).as_posix()
 
     except Exception as e:
