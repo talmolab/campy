@@ -32,14 +32,14 @@ def OpenWriter(cam_params, queue):
         gpuID = str(cam_params["gpuID"])
 
         # Load defaults
-        gpu_params = []
+        output_params = []
 
         # CPU compression
         if cam_params["gpuID"] == -1:
             print("Opened: {} using CPU to compress the stream.".format(full_file_name))
             if preset == "None":
                 preset = "fast"
-            gpu_params = [
+            output_params = [
                 "-r:v",
                 frameRate,
                 "-preset",
@@ -61,8 +61,8 @@ def OpenWriter(cam_params, queue):
                 pix_fmt_out = "yuv420p"
             if cam_params["codec"] == "h264":
                 codec = "libx264"
-                gpu_params.append("-x264-params")
-                gpu_params.append("nal-hrd=cbr")
+                output_params.append("-x264-params")
+                output_params.append("nal-hrd=cbr")
             elif cam_params["codec"] == "h265":
                 codec = "libx265"
 
@@ -77,7 +77,7 @@ def OpenWriter(cam_params, queue):
             if cam_params["gpuMake"] == "nvidia":
                 if preset == "None":
                     preset = "fast"
-                gpu_params = [
+                output_params = [
                     "-r:v",
                     frameRate,  # important to play nice with vsync "0"
                     "-preset",
@@ -101,7 +101,7 @@ def OpenWriter(cam_params, queue):
             # AMD GPU (AMF/VCE) encoder optimized parameters
             elif cam_params["gpuMake"] == "amd":
                 # Preset not supported by AMF
-                gpu_params = [
+                output_params = [
                     "-r:v",
                     frameRate,
                     "-usage",
@@ -132,7 +132,7 @@ def OpenWriter(cam_params, queue):
             elif cam_params["gpuMake"] == "intel":
                 if preset == "None":
                     preset = "faster"
-                gpu_params = [
+                output_params = [
                     "-r:v",
                     frameRate,
                     "-bf:v",
@@ -149,19 +149,19 @@ def OpenWriter(cam_params, queue):
                 elif cam_params["codec"] == "h265":
                     codec = "hevc_qsv"
 
-            if cam_params["videoSegmentLengthInSec"] > 0:
-                mins, secs = divmod(cam_params["videoSegmentLengthInSec"], 60)
-                hours, mins = divmod(mins, 60)
-                gpu_params.extend(
-                    [
-                        "-segment_time",
-                        f"{hours:02}:{mins:02}:{secs:02}",
-                        "-f",
-                        "segment",
-                        "-reset_timestamps",
-                        "1",
-                    ]
-                )
+        if cam_params["videoSegmentLengthInSec"] > 0:
+            mins, secs = divmod(cam_params["videoSegmentLengthInSec"], 60)
+            hours, mins = divmod(mins, 60)
+            output_params.extend(
+                [
+                    "-segment_time",
+                    f"{hours:02}:{mins:02}:{secs:02}",
+                    "-f",
+                    "segment",
+                    "-reset_timestamps",
+                    "1",
+                ]
+            )
 
     except Exception as e:
         logging.error("Caught exception at writer.py OpenWriter: {}".format(e))
@@ -186,7 +186,7 @@ def OpenWriter(cam_params, queue):
                     "ffmpegLogLevel"
                 ],  # "warning", "quiet", "info"
                 input_params=["-an"],  # "-an" no audio
-                output_params=gpu_params,
+                output_params=output_params,
             )
             writer.send(None)  # Initialize the generator
             writing = True
