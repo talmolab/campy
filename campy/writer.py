@@ -8,6 +8,7 @@ import traceback
 from pathlib import Path
 import csv
 import json
+from datetime import datetime
 
 
 console = Console()
@@ -33,14 +34,18 @@ def OpenMetadataWriter(folder_name, cam_params, flush_every=500):
     writer.writeheader()
     t0 = None
 
+    timing = {"started": str(datetime.now())}
+
     # Create a writer in a generator loop
     try:
         while True:
             frameNumber, timeStamp = yield  # this blocks until the .send() is called
             if t0 is None:
                 t0 = timeStamp
+                timing["first_frame"] = str(datetime.now())
             timeStamp -= t0
             writer.writerow({"frameNumber": frameNumber, "timeStamp": timeStamp})
+            timing["last_frame"] = str(datetime.now())
             if frameNumber % flush_every == 0:
                 file.flush()
     except GeneratorExit:
@@ -52,6 +57,13 @@ def OpenMetadataWriter(folder_name, cam_params, flush_every=500):
         file.flush()
         file.close()
         console.log(f"Closed metadata writer for: {ts_path}")
+        timing["stopped"] = str(datetime.now())
+
+        # Save timing metadata
+        timing_path = (Path(folder_name) / "timing.json").as_posix()
+        with open(timing_path, "w") as f:
+            json.dump(timing, f, indent=4)
+        console.log("Saved timing metadata to: " + timing_path)
 
 
 def OpenWriter(cam_params, queue):
