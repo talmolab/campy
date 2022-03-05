@@ -1,0 +1,34 @@
+# This beginner-level config uses the CPU (gpuID: -1) 
+# to compress RGB video
+# using ffmpeg's X264 codec
+
+# Recording parameters
+videoFolder: "./test"
+videoFilename: "0.mp4"
+frameRate: 47
+recTimeInSec: 3600
+chunkLengthInSec: 30
+displayDownsample: 2
+
+# Camera parameters
+numCams: 2
+cameraSelection: [0, 2]
+cameraMake: "minicam"
+frameWidth: 1024
+frameHeight: 768
+
+# Compression parameters
+gpuID: 0
+# https://ffmpeg.org/doxygen/trunk/pixfmt_8h_source.html
+# pixelFormatInput: "rgb0"
+# pixelFormatOutput: "gray8"
+pixelFormatInput: "gray8"
+pixelFormatOutput: "rgb0"
+codec: "h264"
+quality: 23
+# preset: "superfast"
+ffmpegLogLevel: "warning"
+# ffmpegPath: "/usr/bin/ffmpeg"       # Location of ffmpeg binary if not using Anaconda
+
+# Display parameters
+displayFrameRate: 2

@@ -24,6 +24,7 @@ dependencies:
     - pip:
         - setuptools
         - opencv-python
+        - rich
         # For Basler cameras:
         # - pypylon
         - "--editable=./"
