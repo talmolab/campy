@@ -16,7 +16,7 @@ console = Console()
 def OpenMetadataWriter(folder_name, cam_params, flush_every=500):
 
     # Save metadata
-    cam_params_path = (Path(folder_name) / "cam_params.csv").as_posix()
+    cam_params_path = (Path(folder_name) / "cam_params.json").as_posix()
     with open(cam_params_path, "w") as f:
         json.dump(cam_params, f)
     console.log("Saved camera params to: " + cam_params_path)
