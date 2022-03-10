@@ -107,16 +107,6 @@ def AutoParams(params, default_params):
             "Please configure 'numCams' to the number of cameras you want to acquire."
         )
 
-    # Auto name video folder so we don't overwrite
-    p = Path(params["videoFolder"])
-    dt = datetime.now()
-    p = p.with_name(
-        f"{p.name}."
-        f"{str(dt.year)[2:]}{dt.month:02}{dt.day:02}_"
-        f"{dt.hour:02}{dt.minute:02}{dt.second:02}"
-    )
-    params["videoFolder"] = p.as_posix()
-
     return params
 
 
@@ -135,12 +125,25 @@ def ConfigureParams():
     return params
 
 
-def ConfigureCamParams(systems, params, n_cam):
+def ConfigureCamParams(systems, params, n_cam, start_time=None):
     # Insert camera-specific metadata from parameters into cam_params dictionary
     cam_params = params
     cam_params["n_cam"] = n_cam
     cam_params["baseFolder"] = os.getcwd()
     cam_params["cameraName"] = params["cameraNames"][n_cam]
+
+    if start_time is None:
+        start_time = datetime.now()
+    cam_params["start_time"] = start_time
+
+    # Auto name video folder so we don't overwrite
+    p = Path(cam_params["videoFolder"])
+    p = p.with_name(
+        f"{p.name}."
+        f"{str(start_time.year)[2:]}{start_time.month:02}{start_time.day:02}_"
+        f"{start_time.hour:02}{start_time.minute:02}{start_time.second:02}"
+    )
+    cam_params["videoFolder"] = p.as_posix()
 
     cam_params = OptParams(cam_params)
     cam_make = cam_params["cameraMake"]
@@ -266,7 +269,7 @@ def ParseClargs(parser):
         dest="cameraSelection",
         type=int,
         help="Selects and orders camera indices to include in the recording. \
-				List length must be equal to numCams",
+                List length must be equal to numCams",
     )
 
     # Camera arguments. May be specific to particular camera make
@@ -368,7 +371,7 @@ def ParseClargs(parser):
         dest="ffmpegLogLevel",
         type=ast.literal_eval,
         help="Sets verbosity level for ffmpeg logging. ('quiet' (no warnings), \
-			'warning', 'info' (real-time stats)).",
+            'warning', 'info' (real-time stats)).",
     )
     parser.add_argument(
         "--pixelFormatInput",
@@ -387,7 +390,7 @@ def ParseClargs(parser):
         dest="gpuID",
         type=int,
         help="List of integers assigning the gpu index to stream each camera. \
-			Set to -1 to stream with CPU.",
+            Set to -1 to stream with CPU.",
     )
     parser.add_argument(
         "--gpuMake",
@@ -406,14 +409,14 @@ def ParseClargs(parser):
         dest="quality",
         type=int,
         help="Compression quality. Lower number is less compression and larger files. \
-			'23' is visually lossless.",
+            '23' is visually lossless.",
     )
     parser.add_argument(
         "--preset",
         dest="preset",
         type=ast.literal_eval,
         help="Compression preset (e.g. 'slow', 'fast', 'veryfast'). \
-				Incorrect settings may break the pipe. Test with ffmpegLogLevel 'warning' or 'info'.",
+                Incorrect settings may break the pipe. Test with ffmpegLogLevel 'warning' or 'info'.",
     )
 
     parser.add_argument(
