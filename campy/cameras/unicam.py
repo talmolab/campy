@@ -199,6 +199,7 @@ def GrabFrames(cam_params, writeQueue, dispQueue, stopReadQueue, stopWriteQueue)
     grabbing = StartGrabbing(camera, cam_params, cam)
 
     frameNumber = 0
+    firstTimeStamp = None
     while not stopReadQueue:
         try:
             # Grab image from camera buffer if available
@@ -210,6 +211,8 @@ def GrabFrames(cam_params, writeQueue, dispQueue, stopReadQueue, stopWriteQueue)
             grabdata["frameNumber"].append(frameNumber)  # first frame = 1
             timeStamp = cam.GetTimeStamp(grabResult)
             grabdata["timeStamp"].append(timeStamp)
+            if firstTimeStamp is None:
+                firstTimeStamp = timeStamp
 
             # Append numpy array to writeQueue for writer to append to file
             writeQueue.append((frameNumber, timeStamp, img))
@@ -222,7 +225,9 @@ def GrabFrames(cam_params, writeQueue, dispQueue, stopReadQueue, stopWriteQueue)
 
             cam.ReleaseFrame(grabResult)
 
-            if frameNumber >= grabdata["numImagesToGrab"]:
+            if (frameNumber >= grabdata["numImagesToGrab"]) or (
+                (timeStamp - firstTimeStamp) >= cam_params["recTimeInSec"]
+            ):
                 break
 
         except Exception as e:
