@@ -5,7 +5,7 @@ import os, ast, yaml, time, logging
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from campy.cameras import unicam
 from pathlib import Path
-from datetime import datetime
+from campy.utils.utils import get_datetime
 
 
 def DefaultParams():
@@ -133,16 +133,12 @@ def ConfigureCamParams(systems, params, n_cam, start_time=None):
     cam_params["cameraName"] = params["cameraNames"][n_cam]
 
     if start_time is None:
-        start_time = datetime.now()
+        start_time = get_datetime()
     cam_params["start_time"] = start_time
 
     # Auto name video folder so we don't overwrite
     p = Path(cam_params["videoFolder"])
-    p = p.with_name(
-        f"{p.name}."
-        f"{str(start_time.year)[2:]}{start_time.month:02}{start_time.day:02}_"
-        f"{start_time.hour:02}{start_time.minute:02}{start_time.second:02}"
-    )
+    p = p.with_name(f"{p.name}.{start_time}")
     cam_params["videoFolder"] = p.as_posix()
 
     cam_params = OptParams(cam_params)

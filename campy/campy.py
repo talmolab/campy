@@ -23,8 +23,7 @@ from functools import partial
 from campy import writer, display, configurator
 from campy.trigger import trigger
 from campy.cameras import unicam
-from campy.utils.utils import HandleKeyboardInterrupt
-from datetime import datetime
+from campy.utils.utils import HandleKeyboardInterrupt, get_datetime
 
 
 def OpenSystems():
@@ -89,7 +88,8 @@ def Main():
     with HandleKeyboardInterrupt():
         # Acquire cameras in parallel with Windows- and Linux-compatible pool
         p = mp.get_context("spawn").Pool(params["numCams"])
-        acquire = partial(AcquireOneCamera, start_time=datetime.now())
+        start_time = get_datetime()
+        acquire = partial(AcquireOneCamera, start_time=start_time)
         p.map_async(acquire, range(params["numCams"])).get()
 
     CloseSystems(systems, params)
