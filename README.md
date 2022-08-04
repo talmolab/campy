@@ -9,6 +9,16 @@
 - (Optional) Arduino/Teensy microcontroller for syncing cameras and other recordings
 
 ## Installation
+### Conda environment install
+```
+conda env create -f environment.yml
+```
+Then to use:
+```
+conda activate campy
+```
+
+### Manual install
 1. Update graphics drivers
 2. Create and activate a new Python 3.7 Anaconda environment:
 ```
@@ -127,6 +137,8 @@ ffmpegPath: "/usr/bin/ffmpeg"
 
 ## Authors
 Written by Kyle Severson with contributions from Diego Aldarondo and Iris Odstrcil (2019-2021).
+
+Forked and updated by Talmo Pereira (2022-).
 
 ## Credits
 Special thanks to Tim Dunn, David Hildebrand, Vincent Prevosto, Manuel Levy, and Paul Thompson for helpful comments.
