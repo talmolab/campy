@@ -1,0 +1,37 @@
+# This records from 4 MiniCAMs, using the GPU to compress 2 streams and the CPU to
+# compress the rest.
+
+# Recording parameters
+videoFolder: "D:/data/MiniCam/cohort2"
+videoFilename: "mov.mp4"
+frameRate: 47
+# recTimeInSec: 15
+# recTimeInSec: 3600  # 1h
+recTimeInSec: 43200  # 12h
+# recTimeInSec: 46800  # 13h
+# recTimeInSec: 57600  # 14h
+# recTimeInSec: 86400  # 24h
+chunkLengthInSec: 15
+displayDownsample: 2
+
+# Camera parameters
+numCams: 3
+cameraSelection: [0, 1, 2]
+cameraMake: "minicam"
+frameWidth: 1024
+frameHeight: 768
+
+# Compression parameters
+# gpuID: [0, 0, -1, -1]
+gpuID: 0
+pixelFormatInput: "gray8"
+pixelFormatOutput: "rgb0"
+codec: "h264"
+quality: 23
+# preset: [null, null, "superfast", "superfast"]
+ffmpegLogLevel: "warning"
+# ffmpegPath: "/usr/bin/ffmpeg"       # Location of ffmpeg binary if not using Anaconda
+videoSegmentLengthInSec: 900  # 15 min
+
+# Display parameters
+displayFrameRate: 2
